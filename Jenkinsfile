@@ -27,7 +27,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonar') {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=mandate-backend'
+                    bat 'mvn sonar:sonar -Dsonar.projectKey=mandate-backend'
                 }
             }
         }
