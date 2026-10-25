@@ -24,21 +24,27 @@ pipeline {
             post { always { junit 'target/surefire-reports/*.xml' } }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonar') {
-                    bat 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=mandate-backend'
-                }
-            }
-        }
+       stage('SonarCloud Analysis') {
+           steps {
+               withSonarQubeEnv('sonar') {
+                   bat '''
+                     mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                       -Dsonar.host.url=https://sonarcloud.io \
+                       -Dsonar.organization=nicholauszoom \
+                       -Dsonar.projectKey=pipelineautomation \
+                       -Dsonar.qualitygate.wait=true
+                   '''
+               }
+           }
+       }
 
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
+//         stage('Quality Gate') {
+//             steps {
+//                 timeout(time: 5, unit: 'MINUTES') {
+//                     waitForQualityGate abortPipeline: true
+//                 }
+//             }
+//         }
 
         stage('Dependency Scan') {
             steps {
