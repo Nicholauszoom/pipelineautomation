@@ -20,7 +20,7 @@ pipeline {
         }
 
         stage('Build & Unit Test') {
-            steps { sh 'mvn clean verify' }
+            steps { bat 'mvn clean verify' }
             post { always { junit 'target/surefire-reports/*.xml' } }
         }
 
@@ -42,17 +42,17 @@ pipeline {
 
         stage('Dependency Scan') {
             steps {
-                sh 'mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=8'
+                bat 'mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=8'
             }
         }
 
         stage('Build Image') {
-            steps { sh "docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG ." }
+            steps { bat "docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG ." }
         }
 
         stage('Image Scan (Trivy)') {
             steps {
-                sh """
+                bat """
                   docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
                     aquasec/trivy image --exit-code 1 \
                     --severity HIGH,CRITICAL $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
@@ -64,7 +64,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'registry-creds',
                         usernameVariable: 'U', passwordVariable: 'P')]) {
-                    sh """
+                    bat """
                       echo "$P" | docker login $REGISTRY -u "$U" --password-stdin
                       docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
                     """
@@ -75,7 +75,7 @@ pipeline {
         stage('Deploy to Staging') {
             steps {
                 sshagent(['deploy-ssh']) {
-                    sh """
+                    bat """
                       ssh -o StrictHostKeyChecking=no deploy@staging-server '
                         docker pull $REGISTRY/$IMAGE_NAME:$IMAGE_TAG &&
                         docker rm -f mandate-backend || true &&
@@ -96,14 +96,14 @@ pipeline {
             when { branch 'main' }
             steps {
                 sshagent(['deploy-ssh']) {
-                    sh "ssh deploy@prod-server 'docker pull $REGISTRY/$IMAGE_NAME:$IMAGE_TAG && docker compose up -d'"
+                    bat "ssh deploy@prod-server 'docker pull $REGISTRY/$IMAGE_NAME:$IMAGE_TAG && docker compose up -d'"
                 }
             }
         }
     }
 
     post {
-        always  { sh 'docker image prune -f' }
+        always  { bat 'docker image prune -f' }
         failure { echo 'Pipeline failed. Check the logs.' }
     }
 }
