@@ -24,13 +24,11 @@ pipeline {
             post { always { junit 'target/surefire-reports/*.xml' } }
         }
 
-       stage('SonarCloud Analysis') {
+       stage('SonarQube Analysis') {
            steps {
                withSonarQubeEnv('sonar') {
                    bat '''
                      mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-                       -Dsonar.host.url=https://sonarcloud.io \
-                       -Dsonar.organization=nicholauszoom \
                        -Dsonar.projectKey=pipelineautomation \
                        -Dsonar.qualitygate.wait=true
                    '''
@@ -38,13 +36,6 @@ pipeline {
            }
        }
 
-//         stage('Quality Gate') {
-//             steps {
-//                 timeout(time: 5, unit: 'MINUTES') {
-//                     waitForQualityGate abortPipeline: true
-//                 }
-//             }
-//         }
 
         stage('Dependency Scan') {
             steps {
