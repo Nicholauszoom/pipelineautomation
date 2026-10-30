@@ -39,7 +39,12 @@ pipeline {
 
         stage('Dependency Scan') {
             steps {
-                sh 'mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=8'
+                withCredentials([string(credentialsId: 'nvd-api-key', variable: 'NVD_API_KEY')]) {
+                    sh '''
+                      [ -n "$NVD_API_KEY" ] || { echo "NVD_API_KEY is empty"; exit 1; }
+                      mvn org.owasp:dependency-check-maven:13.0.0:check
+                    '''
+                }
             }
         }
 

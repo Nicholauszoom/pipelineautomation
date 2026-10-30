@@ -60,6 +60,16 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>13.0.0</version>
+				<configuration>
+					<nvdApiKeyEnvironmentVariable>NVD_API_KEY</nvdApiKeyEnvironmentVariable>
+					<failBuildOnCVSS>8</failBuildOnCVSS>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
